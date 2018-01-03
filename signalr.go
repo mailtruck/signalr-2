@@ -17,6 +17,7 @@ import (
 
 	"github.com/carterjones/helpers/trace"
 	"github.com/carterjones/signalr/hubs"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/websocket"
 )
 
@@ -129,7 +130,8 @@ type Client struct {
 	ConnectionID    string
 
 	// Header values that should be applied to all HTTP requests.
-	Headers map[string]string
+	Headers     map[string]string
+	AccessToken string
 }
 
 // Conditionally encrypt the traffic depending on the initial
@@ -158,8 +160,11 @@ func (c *Client) makeURL(command string) (u url.URL) {
 
 	// Set the connectionToken.
 	if c.ConnectionToken != "" {
+
 		params.Set("connectionToken", c.ConnectionToken)
 	}
+
+	params.Set("access_token", c.AccessToken)
 
 	switch command {
 	case "negotiate":
@@ -181,6 +186,7 @@ func (c *Client) makeURL(command string) (u url.URL) {
 
 	// Set the parameters.
 	u.RawQuery = params.Encode()
+	spew.Dump(u)
 
 	return
 }
@@ -278,6 +284,7 @@ func (c *Client) Negotiate() (err error) {
 			trace.Error(err)
 			return
 		}
+		spew.Dump(parsed)
 
 		// Set the connection token and ID.
 		c.ConnectionToken = parsed.ConnectionToken
